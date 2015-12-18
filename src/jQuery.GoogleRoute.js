@@ -1,8 +1,18 @@
+/*
+ * jQuery Plugin: jQuery GoogleRoute
+ * https://github.com/dejanstojanovic/jQuery-GoogleRoute
+ * Version 1.0.0
+ *
+ * Copyright (c) 2015 Dejan Stojanovic (http://dejanstojanovic.net)
+ *
+ * Released under the MIT license
+ */
+
 $.fn.GoogleRoute = function (options) {
     var defaults = {
-        finishLatitude: 0,
-        finishLongitue: 0,
-        zoom: 13,                           /* Default map zoom if not defined when initiating */
+        destinationLat: 0,
+        destinationLng: 0,
+        zoom: 6,                           /* Default map zoom if not defined when initiating */
         width: 800,                         /* Map width. If not set then container width will be used*/
         height: 400,                        /* Map height. If not set then container height will be used*/
         language: "en",                     /* List of supported languages https://spreadsheets.google.com/spreadsheet/pub?key=0Ah0xU81penP1cDlwZHdzYWkyaERNc0xrWHNvTTA1S1E&gid=1 */
@@ -39,7 +49,7 @@ $.fn.GoogleRoute = function (options) {
                 else {
                     $(container).height(settings.height);
                 }
-            
+
 
                 initializeGoogleMap(container);
             });
@@ -48,57 +58,50 @@ $.fn.GoogleRoute = function (options) {
 
     function initializeGoogleMap(container) {
         var map = null;
-        map = new google.maps.Map(container, {
-            center: new google.maps.LatLng(settings.finishLatitude, settings.finishLongitue),
-            zoom: settings.zoom,
-            zoomControl: settings.zoomControl,
-            panControl: settings.panControl,
-            scaleControl: settings.scaleControl,
-            streetViewControl: settings.streetViewControl,
-            scrollwheel: settings.scrollWheel,
-            styles: settings.style
-        });
+        if (settings.destinationLat != 0 && settings.destinationLng != 0) {
+            map = new google.maps.Map(container, {
+                center: new google.maps.LatLng(settings.destinationLat, settings.destinationLng),
+                zoom: settings.zoom,
+                zoomControl: settings.zoomControl,
+                panControl: settings.panControl,
+                scaleControl: settings.scaleControl,
+                streetViewControl: settings.streetViewControl,
+                scrollwheel: settings.scrollWheel,
+                styles: settings.style
+            });
+            var directionsService = new google.maps.DirectionsService;
+            var directionsDisplay = new google.maps.DirectionsRenderer;
+            directionsDisplay.setMap(map);
 
-        //map.setOptions({ scrollwheel: settings.scrollWheel });
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
 
-        var directionsService = new google.maps.DirectionsService;
-        var directionsDisplay = new google.maps.DirectionsRenderer;
-        directionsDisplay.setMap(map);
+                    directionsService.route({
+                        origin: new google.maps.LatLng(settings.destinationLat, settings.destinationLng),
+                        destination: new google.maps.LatLng(position.coords.latitude, position.coords.longitude),
+                        waypoints: [],
+                        optimizeWaypoints: true,
+                        travelMode: google.maps.TravelMode.DRIVING
+                    }, function (response, status) {
+                        if (status === google.maps.DirectionsStatus.OK) {
+                            directionsDisplay.setDirections(response);
+                        } else {
+                            console.error('Directions request failed due to ' + status);
+                        }
+                    });
 
-        //calculateAndDisplayRoute(null);
-        //return;
-
-        directionsService.route({
-            origin: new google.maps.LatLng(settings.finishLatitude, settings.finishLongitude),
-            destination: new google.maps.LatLng(25.0766, 55.1408),
-            waypoints: [],
-            optimizeWaypoints: true,
-            travelMode: google.maps.TravelMode.DRIVING
-        }, function (response, status) {
-            if (status === google.maps.DirectionsStatus.OK) {
-                this.directionsDisplay.setDirections(response);
+                });
             } else {
-                window.alert('Directions request failed due to ' + status);
+                console.log("Geolocation is not supported by this browser or not allowed by the user.");
             }
-        });
-        
+        }
+        else {
+            console.error("Destination coordinates not set");
+        }
+
+
     }
 
-    function calculateAndDisplayRoute(destination) {
 
-        this.directionsService.route({
-            origin: new google.maps.LatLng(settings.finishLatitude, settings.finishLongitude),
-            destination: new google.maps.LatLng(25.0766, 55.1408),
-            waypoints: [],
-            optimizeWaypoints: true,
-            travelMode: google.maps.TravelMode.DRIVING
-        }, function (response, status) {
-            if (status === google.maps.DirectionsStatus.OK) {
-                this.directionsDisplay.setDirections(response);
-            } else {
-                window.alert('Directions request failed due to ' + status);
-            }
-        });
-    }
 
 }
