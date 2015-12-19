@@ -16,6 +16,8 @@
     width: 100%;
     height: 60px;
     text-align: center;
+    color:#ffffff;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .cssload-speeding-wheel {

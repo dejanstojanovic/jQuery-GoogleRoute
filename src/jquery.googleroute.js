@@ -21,7 +21,9 @@ $.fn.GoogleRoute = function (options) {
         scaleControl: true,                 /* Show scale on the map */
         streetViewControl: true,            /* Show street view control */
         scrollWheel: false,					/* Use mouse wheel to zoom in and zoom out*/
-        style: null                         /* Use customized style from https://snazzymaps.com/ */
+        style: null,                        /* Use customized style from https://snazzymaps.com/ */
+        waitText: "Please wait..."          /* Text to be disaplyed before map loaded and route calculated */
+
     }
     var settings = $.extend({}, defaults, options);
     var mapApiUrl = "//maps.googleapis.com/maps/api/js?callback=mapApiLoaded";
@@ -36,9 +38,11 @@ $.fn.GoogleRoute = function (options) {
                 var preloader = $("<div/>", { "class": "cssload-container" });
 
                 preloader.append($("<div/>", { "class": "cssload-speeding-wheel" }));
+                preloader.append($("<p/>", { "text":settings.waitText }));
                 selector.parent().append(wrapper);
                 wrapper.append(overlay);
                 overlay.append(preloader);
+
                 selector.prependTo(wrapper);
 
                 var container = selector.get(index);
@@ -62,8 +66,7 @@ $.fn.GoogleRoute = function (options) {
                     $(container).height(settings.height);
                 }
                 $(overlay).height($(container).height());
-
-                $(overlay).find(".cssload-container").css("margin-top", (($(overlay).height() - $(preloader)) / 2).toString() + "px");
+                $(overlay).find(".cssload-container").css("margin-top", (($(overlay).height() - $(preloader).height()) / 2).toString() + "px");
 
                 initializeGoogleMap(container);
             });
